@@ -1,0 +1,64 @@
+/**
+ * Wikipeg grammar for a simple language not unlike wikitext.
+ *
+ * See https://www.npmjs.com/package/wikipeg
+ */
+{
+/* File-scope initializer */
+namespace Wikimedia\LittleWikitext;
+}
+{
+	/**
+	 * @param string $contents
+	 * @return Root
+	 */
+	public static function load( string $contents ): Root {
+		$g = new Grammar();
+		// Ensure every line is terminated with a newline
+		$ast = $g->parse( "$contents\n" );
+		// But strip the trailing blank line if one was added
+		$children = $ast->getChildren();
+		$last = $children[count($children)-1];
+		if ($last instanceof Paragraph && $last->toWikitext() === '') {
+			array_pop($children);
+			return new Root($children);
+		}
+		return $ast;
+	}
+}
+
+// The start production of the grammar.
+start = children:(heading / list)* {
+	return new Root( $children );
+}
+
+heading = sol "==" txt:(!"==" t:inline { return $t; })+ "==" eol {
+	return new Heading( Node::trim( $txt ) );
+}
+
+list = sol !"==" level:("*"*) txt:(inline*) eol {
+	if ( count( $level ) === 0 ) {
+		// Plain text, not a list item
+		return new Paragraph( Node::normalize( $txt ) );
+	} else {
+		return new ListItem( count( $level ), Node::trim( $txt ) );
+	}
+}
+
+inline = link / template / c:notnl { return new Text( $c ); }
+
+template = "{{" target:(!"}}" c:notnl { return $c; })+ "}}" {
+	$target = implode( '', $target );
+	return new Inclusion( $target );
+}
+
+link = "[[" target:(!"|" c1:notnl { return $c1; })+ "|" caption:(!("[["/"]]") c2:inline { return $c2; })* "]]" {
+	$target = implode( '', $target );
+	return new Link( $target, $caption );
+}
+
+notnl = [^\n\r]
+
+sol = ""
+
+eol = [\r] [\n]? / "\n"
