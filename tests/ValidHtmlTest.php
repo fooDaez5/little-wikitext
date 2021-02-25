@@ -19,6 +19,10 @@ use RemexHtml\TreeBuilder\TreeBuilder;
  * You are welcome to make your implementation adhere to a stricter
  * definition of validity if you like, but this is a reasonable
  * starting point.
+ *
+ * Note that this class is itself also a valid PHPUnit test case,
+ * which exercises the ::isValidHtml() and ::makeValidHtml() methods
+ * in order to demonstrate the definition of HTML validity used.
  */
 class ValidHtmlTest extends \PHPUnit\Framework\TestCase {
 
@@ -26,12 +30,20 @@ class ValidHtmlTest extends \PHPUnit\Framework\TestCase {
 	 * Parse and re-serialize an HTML string, using the WHATWG
 	 * standard parsing and fragment serialization algorithms.
 	 * @param string $input An HTML string
+	 * @param bool $noisyErrors True if you want HTML errors to be reported
+	 *   on stderr
 	 * @return string A 'cleaned up' HTML string
 	 */
-	public static function makeValidHtml( string $input ): string {
+	public static function makeValidHtml( string $input, bool $noisyErrors = true ): string {
 		$errorList = [];
-		$errorCallback = function ( $text, $pos ) use ( &$errorList ) {
-			$errorList[] = "\n<!-- $text -->";
+		$errorCallback = function ( $text, $pos ) use ( &$errorList, $noisyErrors ) {
+			# If you want to see the errors inline in the HTML, uncomment this:
+			# $errorList[] = "\n<!-- $text -->";
+			# But we found it more confusing than helpful for the first task,
+			# so for now just spit out the HTML errors on stderr.
+			if ( $noisyErrors ) {
+				error_log( "$text\n" );
+			}
 		};
 		$formatter = new class( [] ) extends HtmlFormatter {
 			public function startDocument( $fragmentNamespace, $fragmentName ) {
@@ -39,11 +51,9 @@ class ValidHtmlTest extends \PHPUnit\Framework\TestCase {
 			}
 		};
 		$serializer = new Serializer( $formatter, $errorCallback );
-		$treeBuilder = new TreeBuilder( $serializer, [
-		] );
+		$treeBuilder = new TreeBuilder( $serializer, [] );
 		$dispatcher = new Dispatcher( $treeBuilder );
-		$tokenizer = new Tokenizer( $dispatcher, $input, [
-		] );
+		$tokenizer = new Tokenizer( $dispatcher, $input, [] );
 		$tokenizer->execute( [
 			'fragmentNamespace' => HTMLData::NS_HTML,
 			'fragmentName' => 'body',
@@ -63,7 +73,7 @@ class ValidHtmlTest extends \PHPUnit\Framework\TestCase {
 	 *   reserialization
 	 */
 	public static function isValidHtml( string $input ): bool {
-		return $input === self::makeValidHtml( $input );
+		return $input === self::makeValidHtml( $input, false );
 	}
 
 	// Test cases for HTML validity
@@ -111,8 +121,9 @@ class ValidHtmlTest extends \PHPUnit\Framework\TestCase {
 	 * @covers Wikimedia\LittleWikitext\Tests\ValidHtmlTest::makeValidHtml
 	 */
 	public function testGoodHtml( $input ) {
-		// Use ::assertEquals() here for better diagnostics if the
-		// test fails.
+		// Use ::assertEquals() and ::makeValidHtml() here for better
+		// diagnostics if the test fails; simply testing ::isValidHtml()
+		// wouldn't provide helpful output.
 		$this->assertEquals( self::makeValidHtml( $input ), $input );
 	}
 

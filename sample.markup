@@ -1,0 +1,9 @@
+== Fix a bug ==
+* Understand bug report
+* Write code
+** Debug it!
+
+== WIP: QA ==
+* Verify fix in beta cluster
+* Resolve [[T12345|bug]]?
+* Something more?

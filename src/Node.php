@@ -4,7 +4,8 @@ declare( strict_types = 1 );
 namespace Wikimedia\LittleWikitext;
 
 /**
- * Very simple abstract type for an AST node.
+ * Base class for the Abstract Syntax Tree (AST): a very simple
+ * abstract type for a tree node.
  */
 abstract class Node {
 	/** @var Node[] */
@@ -20,11 +21,44 @@ abstract class Node {
 		return $this->children;
 	}
 
-	abstract public function toWikitext(): string;
+	/** @return ?Node */
+	final public function getFirstChild(): ?Node {
+		$n = count( $this->children );
+		return $n > 0 ? $this->children[0] : null;
+	}
 
-	abstract public function toHtml(): string;
+	/** @return ?Node */
+	final public function getLastChild(): ?Node {
+		$n = count( $this->children );
+		return $n > 0 ? $this->children[$n - 1] : null;
+	}
 
 	/**
+	 * Helper function to generate markup from this AST node.
+	 * @return string a markup string
+	 */
+	final public function toMarkup(): string {
+		return ToMarkupVisitor::toMarkup( $this );
+	}
+
+	/**
+	 * Helper function to generate HTML from this AST node.
+	 * @return string an HTML string
+	 */
+	final public function toHtml(): string {
+		return ToHtmlVisitor::toHtml( $this );
+	}
+
+	/**
+	 * Visitor pattern.
+	 * @param Visitor $visitor
+	 * @param mixed ...$args
+	 * @return mixed
+	 */
+	abstract public function accept( Visitor $visitor, ...$args );
+
+	/**
+	 * Trim whitespace from the left and right sides of the list of children.
 	 * @param Node[] $children
 	 * @return Node[]
 	 */
@@ -48,6 +82,7 @@ abstract class Node {
 	}
 
 	/**
+	 * Collapse adjacent or empty text nodes.
 	 * @param Node[] $children
 	 * @return Node[]
 	 */

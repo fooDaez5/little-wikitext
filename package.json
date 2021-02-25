@@ -5,7 +5,9 @@
         "wikipeg": "^2.0.5"
     },
     "scripts": {
-        "wikipeg": "wikipeg --php --class-name Grammar src/Grammar.pegphp src/Grammar.php"
+        "wikipeg": "npm run wikipeg-markup && npm run wikipeg-tests",
+        "wikipeg-markup": "wikipeg --php --class-name Grammar src/Grammar.pegphp src/Grammar.php",
+        "wikipeg-tests": "wikipeg --php --class-name Grammar tests/ParserTests/Grammar.pegphp tests/ParserTests/Grammar.php"
     },
     "repository": {
         "type": "git",

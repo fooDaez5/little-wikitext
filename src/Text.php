@@ -23,11 +23,8 @@ class Text extends LeafNode {
 		return $this->value;
 	}
 
-	public function toWikitext(): string {
-		return $this->value;
-	}
-
-	public function toHtml(): string {
-		return htmlentities( $this->value );
+	/** @inheritDoc */
+	public function accept( Visitor $visitor, ...$args ) {
+		return $visitor->visitText( $this, ...$args );
 	}
 }

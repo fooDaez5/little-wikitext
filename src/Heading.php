@@ -5,6 +5,8 @@ namespace Wikimedia\LittleWikitext;
 
 /**
  * The Heading class represents a wikitext heading.
+ *
+ * Heading contains Inclusion, Link, and/or Text nodes as children.
  */
 class Heading extends Node {
 	/**
@@ -14,21 +16,26 @@ class Heading extends Node {
 		parent::__construct( $children );
 	}
 
-	public function toWikitext(): string {
-		$result = "== ";
-		foreach ( $this->children as $child ) {
-			$result .= $child->toWikitext();
-		}
-		$result .= " ==";
-		return $result;
+	/** @inheritDoc */
+	public function accept( Visitor $visitor, ...$args ) {
+		return $visitor->visitHeading( $this, ...$args );
 	}
 
-	public function toHtml(): string {
-		$result = "<h2>";
-		foreach ( $this->children as $child ) {
-			$result .= $child->toHtml();
+	/**
+	 * Return the 'simple name' of this heading, if the heading does not
+	 * contain links or inclusions; otherwise, null.
+	 * @return ?string The simple name if this heading has one, otherwise null
+	 */
+	public function getSimpleName(): ?string {
+		// This assumes the children are normalized; see Node::normalize()
+		// In fact the name is also trimmed during construction via Node::trim()
+		if ( count( $this->children ) !== 1 ) {
+			return null;
 		}
-		$result .= "</h2>";
-		return $result;
+		$child = $this->children[0];
+		if ( !( $child instanceof Text ) ) {
+			return null;
+		}
+		return $child->getValue();
 	}
 }

@@ -1,0 +1,197 @@
+/**
+ * PEG.js grammar for reading MediaWiki parser tests files,
+ * cut down for mediawiki/little-wikitext
+ */
+{
+/* File-scope initializer */
+namespace Wikimedia\LittleWikitext\Tests\ParserTests;
+}
+{
+	/** @var string */
+	private $filename = '';
+	/** @var int */
+	private $lineNum = 1;
+
+	/**
+	 * @param string $filename
+	 * @return array
+	 */
+	public static function load( string $filename ) {
+		$g = new Grammar();
+		$g->filename = $filename;
+		$contents = file_get_contents( $filename ) ?: '';
+		if ( substr( $contents, -1 ) !== "\n" ) {
+			# ensure that the file is terminated with a newline
+			# to match `end_section` rule (and other uses of `eol`)
+			$contents .= "\n";
+		}
+		return $g->parse( $contents );
+	}
+}
+
+testfile = lined_chunk+
+
+/* Line number bookkeeping.
+ * Be careful about backtracking after you successfully match this production.
+ */
+eol = ([\r] [\n]? / "\n") { $this->lineNum++; return "\n"; }
+
+lined_chunk = l:("" { return $this->lineNum; }) c:chunk {
+	$c['filename'] = $this->filename;
+	$c['lineNumStart'] = $l;
+	$c['lineNumEnd'] = $this->lineNum;
+	return $c;
+}
+
+whitespace = [ \t]+
+
+ws = whitespace
+
+rest_of_line = c:([^\r\n]*) eol
+{
+	return implode($c);
+}
+
+line = (!"!!") line:rest_of_line
+{
+	return $line;
+}
+
+text = lines:line*
+{
+	$lines[] = ''; // Ensure \n after last line
+	return implode("\n", $lines);
+}
+
+chunk =
+	comment
+	/ test
+	/ l: line { return [ 'type' => 'line', 'text' => $l ]; }
+
+comment =
+	"#" text:rest_of_line { return [ 'type' => 'comment', 'text' => $text ]; }
+
+
+test =
+	start_test
+	testName:text
+	sections:(section / option_section)*
+	end_section
+{
+	$test = [
+		'type' => 'test',
+		'testName' => $testName
+	];
+
+	foreach ( $sections as $section ) {
+		$test[$section['name']] = $section['text'];
+	}
+	// pegjs parser handles item options as follows:
+	//   item option             value of item.options.parsoid
+	//    <none>                          undefined
+	//    parsoid                             ""
+	//    parsoid=wt2html                  "wt2html"
+	//    parsoid=wt2html,wt2wt        ["wt2html","wt2wt"]
+	//    parsoid={"modes":["wt2wt"]}    {modes:['wt2wt']}
+
+	return $test;
+}
+
+section =
+	"!!" ws? (!"end") (!"options") name:(c:[^ \t\r\n]+ { return implode( $c ); }) rest_of_line
+	text:text
+{
+	return [ 'name' => $name, 'text' => $text ];
+}
+
+option_section =
+	"!!" ws? "options" ws? eol
+	opts:option_list?
+{
+	$o = [];
+	if ( $opts && count($opts) > 0 ) {
+		foreach ( $opts as $opt ) {
+			$o[$opt['k']] = $opt['v'];
+		}
+	}
+
+	return [ 'name' => 'options', 'text' => $o ];
+}
+
+option_list = o:an_option ([ \t] / eol)+ rest:option_list?
+{
+	$result = [ $o ];
+	if ( $rest && count( $rest ) > 0 ) {
+		$result = array_merge( $result, $rest );
+	}
+	return $result;
+}
+
+// from PHP parser in tests/parser/parserTest.inc:parseOptions()
+//   foo
+//   foo=bar
+//   foo="bar baz"
+//   foo=[[bar baz]]
+//   foo={...json...}
+//   foo=bar,"baz quux",[[bat]]
+an_option = k:option_name v:option_value?
+{
+	return [ 'k' => strtolower( $k ), 'v' => $v ?? '' ];
+}
+
+option_name = c:[^ \t\r\n=!]+
+{
+	return implode($c);
+}
+
+option_value = ws? "=" ws? ovl:option_value_list
+{
+	return count( $ovl ) === 1 ? $ovl[0] : $ovl;
+}
+
+option_value_list = v:an_option_value
+					rest:( ws? "," ws? ovl:option_value_list { return $ovl; })?
+{
+	$result = [ $v ];
+	if ( $rest && count( $rest ) > 0 ) {
+		$result = array_merge( $result, $rest );
+	}
+	return $result;
+}
+
+an_option_value = v:(link_target_value / quoted_value / plain_value / json_value)
+{
+	if ( $v[0] === '"' || $v[0] === '{' ) { // } is needed to make pegjs happy
+		return json_decode( $v, true );
+	}
+	return $v;
+}
+
+link_target_value = "[[" v:[^\]\r\n]* "]]"
+{
+	// Perhaps we should canonicalize the title?
+	// Protect with JSON.stringify just in case the link target starts with
+	// double-quote or open-brace.
+	return json_encode( implode( $v ), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+}
+
+quoted_value = [\"] v:( [^\\\"\r\n] / ("\\" c:[^\r\n] { return "\\" . $c; } ) )* [\"]
+{
+	return '"' . implode( $v ) . '"';
+}
+
+plain_value = v:[^ \t\r\n\"\'\[\]=,!\{]+
+{
+	return implode( $v );
+}
+
+json_value = "{" v:( [^\"\{\}\r\n] / quoted_value / json_value / eol )* "}"
+{
+	return "{" . implode( $v ) . "}";
+}
+
+start_test =
+	"!!" ws? "test" ws? eol
+
+end_section =
+	"!!" ws? "end" ws? eol

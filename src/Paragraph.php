@@ -5,6 +5,8 @@ namespace Wikimedia\LittleWikitext;
 
 /**
  * The Paragraph class represents a wikitext paragraph.
+ *
+ * Paragraph contains Inclusion, Link, and/or Text nodes as children.
  */
 class Paragraph extends Node {
 	/**
@@ -14,20 +16,8 @@ class Paragraph extends Node {
 		parent::__construct( $children );
 	}
 
-	public function toWikitext(): string {
-		$result = '';
-		foreach ( $this->children as $child ) {
-			$result .= $child->toWikitext();
-		}
-		return $result;
-	}
-
-	public function toHtml(): string {
-		$result = "<p>";
-		foreach ( $this->children as $child ) {
-			$result .= $child->toHtml();
-		}
-		$result .= "</p>";
-		return $result;
+	/** @inheritDoc */
+	public function accept( Visitor $visitor, ...$args ) {
+		return $visitor->visitParagraph( $this, ...$args );
 	}
 }

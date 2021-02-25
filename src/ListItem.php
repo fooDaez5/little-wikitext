@@ -5,6 +5,8 @@ namespace Wikimedia\LittleWikitext;
 
 /**
  * The ListItem class represents a wikitext list item.
+ *
+ * ListItem contains Inclusion, Link, and/or Text nodes as children.
  */
 class ListItem extends Node {
 	/** @var int */
@@ -27,20 +29,8 @@ class ListItem extends Node {
 		return $this->level;
 	}
 
-	public function toWikitext(): string {
-		$result = str_repeat( '*', $this->level ) . ' ';
-		foreach ( $this->children as $child ) {
-			$result .= $child->toWikitext();
-		}
-		return $result;
-	}
-
-	public function toHtml(): string {
-		$result = "<li>";
-		foreach ( $this->children as $child ) {
-			$result .= $child->toHtml();
-		}
-		$result .= "</li>";
-		return $result;
+	/** @inheritDoc */
+	public function accept( Visitor $visitor, ...$args ) {
+		return $visitor->visitListItem( $this, ...$args );
 	}
 }

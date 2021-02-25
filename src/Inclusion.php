@@ -5,6 +5,8 @@ namespace Wikimedia\LittleWikitext;
 
 /**
  * The Inclusion class represents a section inclusion in wikitext.
+ *
+ * Section inclusions look like this: `{{Foo}}`.
  */
 class Inclusion extends LeafNode {
 	/** @var string */
@@ -23,13 +25,8 @@ class Inclusion extends LeafNode {
 		return $this->target;
 	}
 
-	/** @return string */
-	public function toWikitext(): string {
-		return "{{" . $this->target . "}}";
-	}
-
-	/** @return string */
-	public function toHtml(): string {
-		return '<template id="' . $this->target . '"></template>';
+	/** @inheritDoc */
+	public function accept( Visitor $visitor, ...$args ) {
+		return $visitor->visitInclusion( $this, ...$args );
 	}
 }

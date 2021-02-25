@@ -12,5 +12,6 @@ $cfg['suppress_issue_types'] = [];
 
 # Exclude peg-generated output
 $cfg['exclude_file_list'][] = "src/Grammar.php";
+$cfg['exclude_file_list'][] = "tests/ParserTests/Grammar.php";
 
 return $cfg;

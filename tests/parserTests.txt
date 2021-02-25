@@ -1,0 +1,104 @@
+# LittleWikitext test cases
+#
+# A test case looks like:
+# !! test
+# The name of the test case
+# !! options
+# someFlag
+# someOtherFlag=value
+# !! markup
+# <markup goes here>
+# !! html
+# <correct html for this markup>
+# !! end
+#
+# The 'html' section is expected to be used as the expected output
+# whether or not inclusions are expanded.  If the output would change
+# if inclusions were expanded, use `html/unexpanded` and `html/expanded`
+# as section names.  See the 'Inline markup example' test case below.
+
+###
+### Basic tests
+###
+
+!! test
+To-do list example
+!! markup
+== Fix a bug ==
+* Understand bug report
+* Write code
+* Test
+
+== WIP: QA ==
+* Verify fix in beta cluster
+* Resolve bug?
+* Something more?
+!! html
+<section>
+<h2>Fix a bug</h2>
+<ul>
+<li>Understand bug report</li>
+<li>Write code</li>
+<li>Test</li>
+</ul>
+<p></p>
+</section>
+<section>
+<h2>WIP: QA</h2>
+<ul>
+<li>Verify fix in beta cluster</li>
+<li>Resolve bug?</li>
+<li>Something more?</li>
+</ul>
+</section>
+!! end
+
+
+!! test
+Nested list example (task 1)
+!! markup
+Level 0
+* Level 1
+** Level 2
+*** Level 3
+* Level 1
+Level 0
+!! html
+<p>Level 0</p>
+<ul>
+<li>Level 1</li>
+<li><ul>
+<li>Level 2</li>
+<li><ul>
+<li>Level 3</li>
+</ul></li>
+</ul></li>
+<li>Level 1</li>
+</ul>
+<p>Level 0</p>
+!! end
+
+
+!! test
+Inline markup example
+!! markup
+== First section ==
+This is a [[Target|link to somewhere else]].
+This is a template inclusion:
+{{Next section}}
+== Next section ==
+This is the next section!
+!! html/unexpanded
+<section>
+<h2>First section</h2>
+<p>This is a <a href="./Target">link to somewhere else</a>.</p>
+<p>This is a template inclusion:</p>
+<p><template id="Next section"></template></p>
+</section>
+<section>
+<h2>Next section</h2>
+<p>This is the next section!</p>
+</section>
+!! html/expanded
+<!-- fill this in -->
+!! end

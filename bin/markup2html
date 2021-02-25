@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+# A simple CLI tool to exercise the code.
+
+# First get the library dependencies loaded
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require __DIR__ . '/../vendor/autoload.php';
+} elseif (file_exists(__DIR__ . '/../../../autoload.php')) {
+    require __DIR__ . '/../../../autoload.php';
+} else {
+    echo 'Project dependencies need to be installed using composer.';
+    exit(1);
+}
+
+# Now invoke markup2html in a straight-forward way.
+global $argv;
+
+$filename = $argv[1];
+$options = [];
+$html = \Wikimedia\LittleWikitext\LittleWikitext::markup2html(
+    file_get_contents( $filename ),
+    $options
+);
+echo( "$html" );

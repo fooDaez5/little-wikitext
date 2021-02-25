@@ -4,7 +4,9 @@ declare( strict_types = 1 );
 namespace Wikimedia\LittleWikitext;
 
 /**
- * The List class represents a wikitext list item.
+ * The Link class represents a markup hyperlink.
+ *
+ * The children of a Link node are the caption of the link.
  */
 class Link extends Node {
 	/** @var string */
@@ -24,22 +26,8 @@ class Link extends Node {
 		return $this->target;
 	}
 
-	/** @return string */
-	public function toWikitext(): string {
-		$result = "[[" . $this->target . "|";
-		foreach ( $this->children as $child ) {
-			$result .= $child->toWikitext();
-		}
-		return $result . "]]";
-	}
-
-	/** @return string */
-	public function toHtml(): string {
-		$result = '<a href="./' . $this->target . '">';
-		foreach ( $this->children as $child ) {
-			$result .= $child->toHtml();
-		}
-		$result .= "</a>";
-		return $result;
+	/** @inheritDoc */
+	public function accept( Visitor $visitor, ...$args ) {
+		return $visitor->visitLink( $this, ...$args );
 	}
 }

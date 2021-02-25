@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# This sets the PHPRC and PATH appropriately then chains to the next
+# command.
+ROOTDIR=$(readlink -f -- $(dirname "$0")/..)
+
+if test -z "$REPL_ID"; then
+    # Not in repl.it; helper/build isn't really necessary in this case,
+    # but we're going to chain to the next command just so we can use
+    # `build/helper` as a consistent prefix in our readme.
+    # (and let's check for proper setup while we're at it)
+    if ! test -d "$ROOTDIR/vendor" ; then
+        echo "Error: it appears composer libraries have not been installed."
+        echo "Install composer (see https://getcomposer.org/), ensure"
+        echo "the command named 'composer' is in your path, and then run"
+        echo "'composer update' to install the necessary libraries."
+        exit 1
+    fi
+    export PATH=$PATH:$ROOTDIR/vendor/bin
+    exec "$@"
+elif test -e "$ROOTDIR/.INSTALLING_1_of_4"; then
+    echo "Still installing PHP dependencies; please wait until the"
+    echo "files named .INSTALLING_* are removed to signal the end of"
+    echo "installation."
+    exit 1
+else
+    export PHPRC=$ROOTDIR/build/replit.ini
+    export PATH=$PATH:/home/runner/bin:$ROOTDIR/vendor/bin
+    exec "$@"
+fi
