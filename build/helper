@@ -2,7 +2,8 @@
 
 # This sets the PHPRC and PATH appropriately then chains to the next
 # command.
-ROOTDIR=$(readlink -f -- $(dirname "$0")/..)
+ROOTDIR=$(dirname "$0")/..
+ROOTDIR=$(cd "$ROOTDIR" && echo "$(pwd -P)")
 
 if test -z "$REPL_ID"; then
     # Not in repl.it; helper/build isn't really necessary in this case,
@@ -24,7 +25,7 @@ elif test -e "$ROOTDIR/.INSTALLING_1_of_4"; then
     echo "installation."
     exit 1
 else
-    export PHPRC=$ROOTDIR/build/replit.ini
+    export PHPRC="$ROOTDIR/build/replit.ini"
     export PATH=$PATH:/home/runner/bin:$ROOTDIR/vendor/bin
     exec "$@"
 fi
