@@ -47,6 +47,7 @@ class Item {
 	 * Throw an error related to this item.
 	 * @param string $desc The error description.
 	 * @param ?string $text Optional additional context.
+	 * @return never-returns
 	 * @throws \Error
 	 */
 	public function error( string $desc, ?string $text = null ) {

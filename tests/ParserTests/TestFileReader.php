@@ -48,7 +48,7 @@ class TestFileReader {
 			} elseif ( $item['type'] === 'comment' ) {
 				$lastComment .= $item['text'];
 			} elseif ( $item['type'] === 'line' ) {
-				if ( !empty( trim( $item['text'] ) ) ) {
+				if ( trim( $item['text'] ) != false ) {
 					( new Item( $item ) )->error( 'Invalid line', $item['text'] );
 				}
 			} else {
