@@ -25,7 +25,6 @@ elif test -e "$ROOTDIR/.INSTALLING_1_of_4"; then
     echo "installation."
     exit 1
 else
-    export PHPRC="$ROOTDIR/build/replit.ini"
-    export PATH=$PATH:/home/runner/bin:$ROOTDIR/vendor/bin
+    export PATH=$ROOTDIR/vendor/bin:$PATH
     exec "$@"
 fi
