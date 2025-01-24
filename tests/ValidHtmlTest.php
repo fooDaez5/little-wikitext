@@ -2,12 +2,12 @@
 
 namespace Wikimedia\LittleWikitext\Tests;
 
-use RemexHtml\HTMLData;
-use RemexHtml\Serializer\HtmlFormatter;
-use RemexHtml\Serializer\Serializer;
-use RemexHtml\Tokenizer\Tokenizer;
-use RemexHtml\TreeBuilder\Dispatcher;
-use RemexHtml\TreeBuilder\TreeBuilder;
+use Wikimedia\RemexHtml\HTMLData;
+use Wikimedia\RemexHtml\Serializer\HtmlFormatter;
+use Wikimedia\RemexHtml\Serializer\Serializer;
+use Wikimedia\RemexHtml\Tokenizer\Tokenizer;
+use Wikimedia\RemexHtml\TreeBuilder\Dispatcher;
+use Wikimedia\RemexHtml\TreeBuilder\TreeBuilder;
 
 /**
  * This is a helper class to test HTML validity.
@@ -36,7 +36,7 @@ class ValidHtmlTest extends \PHPUnit\Framework\TestCase {
 	 */
 	public static function makeValidHtml( string $input, bool $noisyErrors = true ): string {
 		$errorList = [];
-		$errorCallback = function ( $text, $pos ) use ( &$errorList, $noisyErrors ) {
+		$errorCallback = static function ( $text, $pos ) use ( &$errorList, $noisyErrors ) {
 			# If you want to see the errors inline in the HTML, uncomment this:
 			# $errorList[] = "\n<!-- $text -->";
 			# But we found it more confusing than helpful for the first task,
