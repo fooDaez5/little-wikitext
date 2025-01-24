@@ -17,7 +17,7 @@ if test -z "$REPL_ID"; then
         echo "'composer update' to install the necessary libraries."
         exit 1
     fi
-    export PATH=$PATH:$ROOTDIR/vendor/bin
+    export PATH=$ROOTDIR/vendor/bin:$PATH
     exec "$@"
 elif test -e "$ROOTDIR/.INSTALLING_1_of_4"; then
     echo "Still installing PHP dependencies; please wait until the"
