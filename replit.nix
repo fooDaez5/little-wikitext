@@ -1,6 +1,6 @@
 {pkgs}: {
   deps = [
-    pkgs.php81Extensions.curl
-    pkgs.php81Extensions.mbstring
+    pkgs.php82Extensions.curl
+    pkgs.php82Extensions.mbstring
   ];
 }
