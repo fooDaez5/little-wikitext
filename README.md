@@ -63,6 +63,7 @@ will fail with one error.  The test cases can be found in
 We would like to implement **inclusions**: for every instance of
 `{{Foo}}` in the input wikitext, we should replace it in the output
 with the contents of the section titled `Foo`.
+XXX improve the wording here, don't assume Foo is a metavariable XXX
 
 Please provide *test cases* which demonstrate the behavior of the new
 feature.  If you have time, you may implement code to make some or all
