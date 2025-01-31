@@ -1,3 +1,3 @@
-entrypoint="./build/helper composer test"
+run="composer test"
 language="php_cli"
 modules = ["php-8.2", "bash"]
