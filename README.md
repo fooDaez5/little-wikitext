@@ -54,7 +54,7 @@ code you can write in 60 minutes.
 
 ### Task 1
 
-The command `build/helper composer test` will run a test suite, which
+The command `composer test` will run a test suite, which
 will fail with one error.  The test cases can be found in
 `tests`/[`parserTests.txt`].  Fix the code so that the test passes.
 

@@ -80,13 +80,13 @@ Running tests
 
 To check that your development environment is properly set up, run:
 
-    build/helper composer initial-test
+    composer initial-test
 
 This should pass with no errors in a fresh checkout of this library.
 
 To run the main test suite, use:
 
-    build/helper composer test
+    composer test
 
 which runs the tests found in
 [tests/parserTests.txt](./tests/parserTests.txt).  It will initially
